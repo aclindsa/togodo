@@ -1,0 +1,39 @@
+<html>
+<head>
+<title>ToGoDo</title>
+
+<script type="text/javascript" src="static/util.js"></script>
+<script type="text/javascript" src="static/models.js"></script>
+<script type="text/javascript" src="static/users.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<script type="text/javascript">
+function test() {
+    u = new User()
+    u.Username = "aclindsa"
+    u.Name = "Aaron"
+    u.Password = "blah"
+    u.Email = "blah@example.com"
+
+    $.ajax({
+        type: "POST",
+        dataType: "json",
+        url: "user/",
+        data: {user: u.toJSON()},
+        success: function(data, status, jqXHR) {
+            console.log(data, status. jqXHR);
+        }
+    });
+}
+</script>
+
+</head>
+<body>
+
+<center>
+    <h2>ToGoDo</h2>
+    <input type="button" onclick="test()" value="Test" />
+</center>
+
+</body>
+</html>
