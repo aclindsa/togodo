@@ -1,11 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
-	"html/template"
-	"log"
 	"net/http"
 )
 
@@ -13,8 +12,13 @@ var cookie_store = sessions.NewCookieStore(securecookie.GenerateRandomKey(64))
 
 type Session struct {
 	SessionId     int64
-	SessionSecret string
+	SessionSecret string `json:"-"`
 	UserId        int64
+}
+
+func (s *Session) Write(w http.ResponseWriter) error {
+	enc := json.NewEncoder(w)
+	return enc.Encode(s)
 }
 
 func GetSession(r *http.Request) (*Session, error) {
@@ -34,38 +38,81 @@ func GetSession(r *http.Request) (*Session, error) {
 	return &s, nil
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var user User
-	user.Username = r.PostFormValue("username")
-	user.Password = r.PostFormValue("password")
-
-	if user.Username == "" || user.Password == "" {
-		LoginForm(w, nil)
-	} else {
-		//		u := GetUser(r)
-		//		if u {
-		//		} else {
-		//			log.Printf("unable to find user")
-		//		}
+func DeleteSessionIfExists(r *http.Request) {
+	session, err := GetSession(r)
+	if err == nil {
+		DB.Delete(session)
 	}
 }
 
-func LoginForm(w http.ResponseWriter, msg *string) {
+func NewSession(w http.ResponseWriter, r *http.Request, userid int64) (*Session, error) {
+	s := Session{}
 
-	t, err := template.New("login").Parse(`<html>
-<body>
-{{if .}} <p style="color:red">{{.}}</p>{{end}}
-<form action="#" method="POST">
-Username: <input type="text" name="username"><br />
-Password: <input type="password" name="password"><br />
-<input type="submit" value="Login">
-</form>
-</body>
-</html>`)
+	session, _ := cookie_store.Get(r, "togodo")
+
+	session.Values["session-secret"] = string(securecookie.GenerateRandomKey(64))
+	s.SessionSecret = session.Values["session-secret"].(string)
+	s.UserId = userid
+
+	err := DB.Insert(&s)
 	if err != nil {
-		http.Error(w, "Unable to parse login template", 500)
-		log.Print(err)
-		return
+		return nil, err
 	}
-	t.Execute(w, msg)
+
+	err = session.Save(r, w)
+	if err != nil {
+		return nil, err
+	} else {
+		return &s, nil
+	}
+}
+
+func SessionHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" || r.Method == "PUT" {
+		user_json := r.PostFormValue("user")
+		if user_json == "" {
+			WriteError(w, 3 /*Invalid Request*/)
+			return
+		}
+
+		user := User{}
+		err := user.Read(user_json)
+		if err != nil {
+			WriteError(w, 3 /*Invalid Request*/)
+			return
+		}
+
+		dbuser, err := GetUserByUsername(user.Username)
+		if err != nil {
+			WriteError(w, 2 /*Unauthorized Access*/)
+			return
+		}
+
+		user.HashPassword()
+		if user.PasswordHash != dbuser.PasswordHash {
+			WriteError(w, 2 /*Unauthorized Access*/)
+			return
+		}
+
+		DeleteSessionIfExists(r)
+
+		_, err = NewSession(w, r, dbuser.UserId)
+		if err != nil {
+			WriteError(w, 999 /*Internal Error*/)
+			return
+		}
+
+		WriteSuccess(w)
+	} else if r.Method == "GET" {
+		s, err := GetSession(r)
+		if err != nil {
+			WriteError(w, 1 /*Not Signed In*/)
+			return
+		}
+
+		s.Write(w)
+	} else if r.Method == "DELETE" {
+		DeleteSessionIfExists(r)
+		WriteSuccess(w)
+	}
 }

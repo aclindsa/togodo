@@ -48,7 +48,7 @@ func main() {
 	servemux := http.NewServeMux()
 	servemux.HandleFunc("/", rootHandler)
 	servemux.HandleFunc("/static/", staticHandler)
-	servemux.HandleFunc("/login/", LoginHandler)
+	servemux.HandleFunc("/session/", SessionHandler)
 	servemux.HandleFunc("/user/", UserHandler)
 
 	listener, _ := net.Listen("tcp", ":"+strconv.Itoa(port))

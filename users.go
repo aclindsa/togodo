@@ -1,18 +1,28 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
 )
 
 type User struct {
-	UserId   int64
-	Name	 string
-	Username string
-	Password string
-	Email    string
+	UserId       int64
+	Name         string
+	Username     string
+	Password     string `db:"-"`
+	PasswordHash string `json:"-"`
+	Email        string
+}
+
+type UserExistsError struct{}
+
+func (ueu UserExistsError) Error() string {
+	return "User exists"
 }
 
 func (u *User) Write(w http.ResponseWriter) error {
@@ -25,6 +35,13 @@ func (u *User) Read(json_str string) error {
 	return dec.Decode(u)
 }
 
+func (u *User) HashPassword() {
+	password_hasher := sha256.New()
+	io.WriteString(password_hasher, u.Password)
+	u.PasswordHash = fmt.Sprintf("%x", password_hasher.Sum(nil))
+	u.Password = ""
+}
+
 func GetUser(userid int64) (*User, error) {
 	var u User
 
@@ -33,6 +50,47 @@ func GetUser(userid int64) (*User, error) {
 		return nil, err
 	}
 	return &u, nil
+}
+
+func GetUserByUsername(username string) (*User, error) {
+	var u User
+
+	err := DB.SelectOne(&u, "SELECT * from users where Username=?", username)
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+func InsertUser(u *User) error {
+	transaction, err := DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	existing, err := transaction.SelectInt("SELECT count(*) from users where Username=?", u.Username)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+	if existing > 0 {
+		transaction.Rollback()
+		return UserExistsError{}
+	}
+
+	err = transaction.Insert(u)
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+
+	err = transaction.Commit()
+	if err != nil {
+		transaction.Rollback()
+		return err
+	}
+
+	return nil
 }
 
 func GetUserFromSession(r *http.Request) (*User, error) {
@@ -44,7 +102,6 @@ func GetUserFromSession(r *http.Request) (*User, error) {
 }
 
 func UserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Print(r.Method)
 	if r.Method == "POST" {
 		user_json := r.PostFormValue("user")
 		if user_json == "" {
@@ -59,13 +116,20 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		user.UserId = -1
+		user.HashPassword()
 
-		err = DB.Insert(&user)
+		err = InsertUser(&user)
 		if err != nil {
-			WriteError(w, 999 /*Internal Error*/)
-			log.Print(err)
+			if _, ok := err.(UserExistsError); ok {
+				WriteError(w, 4 /*User Exists*/)
+			} else {
+				WriteError(w, 999 /*Internal Error*/)
+				log.Print(err)
+			}
 			return
 		}
+
+		WriteSuccess(w)
 	} else {
 		user, err := GetUserFromSession(r)
 		if err != nil {
@@ -110,6 +174,8 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 				log.Print(err)
 				return
 			}
+
+			WriteSuccess(w)
 		} else if r.Method == "DELETE" {
 			count, err := DB.Delete(&user)
 			if count != 1 || err != nil {
@@ -117,6 +183,8 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 				log.Print(err)
 				return
 			}
+
+			WriteSuccess(w)
 		}
 	}
 }

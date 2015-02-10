@@ -7,14 +7,16 @@ import (
 )
 
 type Error struct {
-	ErrorId	int
+	ErrorId     int
 	ErrorString string
 }
 
-var error_codes = map[int]string {
+var error_codes = map[int]string{
 	1: "Not Signed In",
 	2: "Unauthorized Access",
 	3: "Invalid Request",
+	4: "User Exists",
+	//  5:   "Connection Failed", //client-side error
 	999: "Internal Error",
 }
 
