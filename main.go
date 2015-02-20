@@ -50,6 +50,7 @@ func main() {
 	servemux.HandleFunc("/static/", staticHandler)
 	servemux.HandleFunc("/session/", SessionHandler)
 	servemux.HandleFunc("/user/", UserHandler)
+	servemux.HandleFunc("/todo/", TodoHandler)
 
 	listener, _ := net.Listen("tcp", ":"+strconv.Itoa(port))
 	http.Serve(listener, context.ClearHandler(servemux))
