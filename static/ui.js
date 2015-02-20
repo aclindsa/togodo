@@ -1,63 +1,63 @@
-var LoginBar = React.createClass({
+var NewUserForm = React.createClass({
 	getInitialState: function() {
-		return {username: '', password: ''};
-	},
-	onUsernameChange: function(e) {
-		this.setState({username: e.target.value});
-	},
-	onPasswordChange: function(e) {
-		this.setState({password: e.target.value});
+		return {error: ""};
 	},
 	handleSubmit: function(e) {
-		var user = new User();
+		var u = new User();
+		var error = "";
 		e.preventDefault();
-		user.Username = this.state.username;
-		user.Password = this.state.password;
-		this.props.onLoginSubmit(user);
+
+		u.Name = this.refs.name.getDOMNode().value;
+		u.Username = this.refs.username.getDOMNode().value;
+		u.Email = this.refs.email.getDOMNode().value;
+		u.Password = this.refs.password.getDOMNode().value;
+		if (u.Password != this.refs.confirm_password.getDOMNode().value) {
+			this.setState({error: "Error: password do not match"});
+			return;
+		}
+
+		this.handleCreateNewUser(u);
+
+		this.refs.name.getDOMNode().value = '';
 		this.refs.username.getDOMNode().value = '';
+		this.refs.email.getDOMNode().value = '';
 		this.refs.password.getDOMNode().value = '';
+		this.refs.confirm_password.getDOMNode().value = '';
+	},
+	handleCreateNewUser: function(user) {
+		$.ajax({
+			type: "POST",
+			dataType: "json",
+			url: "user/",
+			data: {user: user.toJSON()},
+			success: function(data, status, jqXHR) {
+				var e = new Error();
+				e.fromJSON(data);
+				if (e.isError()) {
+					this.setState({error: e});
+				} else {
+					this.props.onNewUser();
+				}
+			}.bind(this),
+			error: function(jqXHR, status, error) {
+				var e = new Error();
+				e.ErrorId = 5;
+				e.ErrorString = "Request Failed: " + status + error;
+				this.setState({error: e});
+			}.bind(this),
+		});
 	},
 	render: function() {
 		return (
 			<div>
 				<form onSubmit={this.handleSubmit}>
-					User: <input onChange={this.onUsernameChange} ref="username" />
-					Password: <input type="password" onChange={this.onPasswordChange} ref="password" />
-					<button>Login</button>
-				</form>
-			</div>
-		);
-	}
-});
-
-var LogoutBar = React.createClass({
-	handleSubmit: function(e) {
-		e.preventDefault();
-		this.props.onLogoutSubmit();
-	},
-	render: function() {
-		return (
-			<div>
-				<form onSubmit={this.handleSubmit}>
-					Signed in as {this.props.user.Username}
-					<button>Logout</button>
-				</form>
-			</div>
-		);
-	}
-});
-
-var ErrorBar = React.createClass({
-	handleSubmit: function(e) {
-		e.preventDefault();
-		this.props.onErrorClear();
-	},
-	render: function() {
-		return (
-			<div>
-				<form onSubmit={this.handleSubmit}>
-					Error {this.props.error.ErrorId}: {this.props.error.ErrorString}
-					<button>Clear</button>
+					<span color="red">{this.state.error}</span>
+					Name: <input ref="name" /> <br />
+					Username: <input ref="username" /> <br />
+					Email: <input ref="email" /> <br />
+					Password: <input type="password" ref="password" /> <br />
+					Confirm Password: <input type="password" ref="confirm_password" /> <br />
+					<button>Create User</button>
 				</form>
 			</div>
 		);
@@ -67,9 +67,29 @@ var ErrorBar = React.createClass({
 var ToGoDoApp = React.createClass({
 	getInitialState: function() {
 		return {items: [],
+			hash: "home",
 			session: new Session(),
 			user: new User(),
 			error: new Error()};
+	},
+	componentDidMount: function() {
+		this.getSession();
+		this.handleHashChange();
+		if ("onhashchange" in window) {
+			window.onhashchange = this.handleHashChange;
+		}
+	},
+	handleHashChange: function() {
+		var hash = location.hash.replace(/^#/, '');
+		if (hash.length == 0)
+			hash = "home";
+		if (hash != this.state.hash)
+			this.setHash(hash);
+	},
+	setHash: function(hash) {
+		location.hash = hash;
+		if (this.state.hash != hash)
+		this.setState({hash: hash});
 	},
 	ajaxError: function(jqXHR, status, error) {
 		var e = new Error();
@@ -119,9 +139,6 @@ var ToGoDoApp = React.createClass({
 			error: this.ajaxError
 		});
 	},
-	componentDidMount: function() {
-		this.getSession();
-	},
 	handleErrorClear: function() {
 		this.setState({error: new Error()});
 	},
@@ -159,19 +176,22 @@ var ToGoDoApp = React.createClass({
 			error: this.ajaxError
 		});
 	},
+	handleCreateNewUser: function() {
+		this.setHash("new_user");
+	},
+	handleNewUser: function(user) {
+		this.setHash("home");
+	},
 	render: function() {
-		var loginoutBar;
-		if (this.state.error.isError())
-			loginoutBar = <ErrorBar error={this.state.error} onErrorClear={this.handleErrorClear} />;
-		else if (!this.state.user.isUser())
-			loginoutBar = <LoginBar onLoginSubmit={this.handleLoginSubmit} />;
-		else
-			loginoutBar = <LogoutBar user={this.state.user} onLogoutSubmit={this.handleLogoutSubmit} />;
+		var mainContent;
+		if (this.state.hash == "new_user")
+			mainContent = <NewUserForm onNewUser={this.handleNewUser} />
 
 		return (
 			<div>
-				{loginoutBar}
+				<TopBar error={this.state.error} onErrorClear={this.handleErrorClear} onLoginSubmit={this.handleLoginSubmit} onCreateNewUser={this.handleCreateNewUser} user={this.state.user} onLogoutSubmit={this.handleLogoutSubmit} />
 				<h3>ToGoDo</h3>
+				{mainContent}
 			</div>
 		);
 	}
