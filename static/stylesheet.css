@@ -1,0 +1,5 @@
+div#content {
+	width: 80%;
+	min-width: 45em;
+	max-width: 60em;
+}

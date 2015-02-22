@@ -76,6 +76,64 @@ Session.prototype.isSession = function() {
 		this.UserId != empty_session.UserId;
 }
 
+function Todo() {
+	this.TodoId = -1;
+	this.Description = "";
+	this.Due = new Date(0);
+	this.Notes = "";
+	this.Completed = false;
+}
+
+Todo.prototype.toJSON = function() {
+	var json_obj = {};
+	json_obj.TodoId = this.TodoId;
+	json_obj.Description = this.Description;
+	json_obj.Due = this.Due.toJSON();
+	json_obj.Notes = this.Notes;
+	json_obj.Completed = this.Completed;
+	return JSON.stringify(json_obj);
+}
+
+Todo.prototype.fromJSON = function(json_input) {
+	var json_obj;
+	if (typeof json_input == "string")
+		json_obj = $.parseJSON(json_input)
+	else if (typeof json_input == "object")
+		json_obj = json_input;
+	else
+		console.error("Unable to parse json:", json_input);
+
+	if (json_obj.hasOwnProperty("TodoId"))
+		this.TodoId = json_obj.TodoId
+	if (json_obj.hasOwnProperty("Description"))
+		this.Description = json_obj.Description
+	if (json_obj.hasOwnProperty("Due")) {
+		this.Due = json_obj.Due
+		if (typeof this.Due === 'string') {
+			var t = Date.parse(this.Due);
+			if (t)
+				this.Due = new Date(t);
+			else
+				this.Due = new Date(0);
+		} else
+			this.Due = new Date(0);
+	}
+	if (json_obj.hasOwnProperty("Notes"))
+		this.Notes = json_obj.Notes
+	if (json_obj.hasOwnProperty("Completed"))
+		this.Completed = json_obj.Completed
+}
+
+Todo.prototype.copy = function() {
+	var newTodo = new Todo();
+	newTodo.TodoId = this.TodoId;
+	newTodo.Description = this.Description;
+	newTodo.Due = this.Due;
+	newTodo.Notes = this.Notes;
+	newTodo.Completed = this.Completed;
+	return newTodo;
+}
+
 function Error() {
 	this.ErrorId = -1;
 	this.ErrorString = "";

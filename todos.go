@@ -12,7 +12,9 @@ type Todo struct {
 	TodoId      int64
 	Description string
 	Due         time.Time
-	UserId      int64
+	Notes       string
+	Completed   bool
+	UserId      int64 `json:"-"`
 }
 
 type TodoList struct {
@@ -75,11 +77,13 @@ func TodoHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		todo.TodoId = -1
+		todo.UserId = user.UserId
 
-		err = DB.Insert(todo)
+		err = DB.Insert(&todo)
 		if err != nil {
 			WriteError(w, 999 /*Internal Error*/)
 			log.Print(err)
+			return
 		}
 
 		WriteSuccess(w)
@@ -134,6 +138,7 @@ func TodoHandler(w http.ResponseWriter, r *http.Request) {
 				WriteError(w, 3 /*Invalid Request*/)
 				return
 			}
+			todo.UserId = user.UserId
 
 			count, err := DB.Update(&todo)
 			if count != 1 || err != nil {
@@ -147,6 +152,7 @@ func TodoHandler(w http.ResponseWriter, r *http.Request) {
 			var todo Todo
 			todo.TodoId = todoid
 			count, err := DB.Delete(&todo)
+			//TODO detect if this error was due to the key missing or something else, we could be returning an internal error here when the TodoId was just supplied wrong
 			if count != 1 || err != nil {
 				WriteError(w, 999 /*Internal Error*/)
 				log.Print(err)

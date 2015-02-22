@@ -46,7 +46,7 @@ var LogoutBar = React.createClass({
 		return (
 			<div>
 				<form onSubmit={this.handleSubmit}>
-					Signed in as {this.props.user.Username}
+					Signed in as {this.props.user.Name}
 					<button>Logout</button>
 				</form>
 			</div>

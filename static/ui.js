@@ -66,11 +66,13 @@ var NewUserForm = React.createClass({
 
 var ToGoDoApp = React.createClass({
 	getInitialState: function() {
-		return {items: [],
+		return {
 			hash: "home",
 			session: new Session(),
 			user: new User(),
-			error: new Error()};
+			todos: [],
+			error: new Error()
+		};
 	},
 	componentDidMount: function() {
 		this.getSession();
@@ -114,6 +116,7 @@ var ToGoDoApp = React.createClass({
 				}
 				this.setState({session: s});
 				this.getUser();
+				this.getTodos();
 			}.bind(this),
 			error: this.ajaxError
 		});
@@ -135,6 +138,33 @@ var ToGoDoApp = React.createClass({
 					u.fromJSON(data);
 				}
 				this.setState({user: u});
+			}.bind(this),
+			error: this.ajaxError
+		});
+	},
+	getTodos: function() {
+		if (!this.state.session.isSession()) {
+			this.setState({todos: []});
+			return;
+		}
+		$.ajax({
+			type: "GET",
+			dataType: "json",
+			url: "todo/",
+			success: function(data, status, jqXHR) {
+				var e = new Error();
+				var ts = [];
+				e.fromJSON(data);
+				if (e.isError()) {
+					this.setState({error: e});
+				} else {
+					for (var i = 0; i < data.todos.length; i++) {
+						var t = new Todo();
+						t.fromJSON(data.todos[i]);
+						ts.push(t);
+					}
+				}
+				this.setState({todos: ts});
 			}.bind(this),
 			error: this.ajaxError
 		});
@@ -161,6 +191,7 @@ var ToGoDoApp = React.createClass({
 		});
 	},
 	handleLogoutSubmit: function() {
+		this.setState({todos: []});
 		$.ajax({
 			type: "DELETE",
 			dataType: "json",
@@ -182,10 +213,66 @@ var ToGoDoApp = React.createClass({
 	handleNewUser: function(user) {
 		this.setHash("home");
 	},
+	handleCreateTodo: function(todo) {
+		$.ajax({
+			type: "POST",
+			dataType: "json",
+			url: "todo/",
+			data: {todo: todo.toJSON()},
+			success: function(data, status, jqXHR) {
+				var e = new Error();
+				e.fromJSON(data);
+				if (e.isError()) {
+					this.setState({error: e});
+				} else {
+					this.getTodos();
+				}
+			}.bind(this),
+			error: this.ajaxError
+		});
+	},
+	handleUpdateTodo: function(todo) {
+		$.ajax({
+			type: "PUT",
+			dataType: "json",
+			url: "todo/"+todo.TodoId+"/",
+			data: {todo: todo.toJSON()},
+			success: function(data, status, jqXHR) {
+				var e = new Error();
+				e.fromJSON(data);
+				if (e.isError()) {
+					this.setState({error: e});
+				} else {
+					this.getTodos();
+				}
+			}.bind(this),
+			error: this.ajaxError
+		});
+	},
+	handleDeleteTodo: function(todo) {
+		$.ajax({
+			type: "DELETE",
+			dataType: "json",
+			url: "todo/"+todo.TodoId+"/",
+			data: {todo: todo.toJSON()},
+			success: function(data, status, jqXHR) {
+				var e = new Error();
+				e.fromJSON(data);
+				if (e.isError()) {
+					this.setState({error: e});
+				} else {
+					this.getTodos();
+				}
+			}.bind(this),
+			error: this.ajaxError
+		});
+	},
 	render: function() {
 		var mainContent;
 		if (this.state.hash == "new_user")
 			mainContent = <NewUserForm onNewUser={this.handleNewUser} />
+		else
+			mainContent = <TodoList todos={this.state.todos} onCreateTodo={this.handleCreateTodo} onUpdateTodo={this.handleUpdateTodo} onDeleteTodo={this.handleDeleteTodo} />
 
 		return (
 			<div>
