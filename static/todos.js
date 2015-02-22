@@ -4,12 +4,20 @@ var ListGroupItem = ReactBootstrap.ListGroupItem;
 var Input = ReactBootstrap.Input;
 
 var Button = ReactBootstrap.Button;
+var DropdownButton = ReactBootstrap.DropdownButton;
 var ButtonGroup = ReactBootstrap.ButtonGroup;
 var ButtonToolbar = ReactBootstrap.ButtonToolbar;
 
 var Row = ReactBootstrap.Row;
 var Col = ReactBootstrap.Col;
 
+var Nav = ReactBootstrap.Nav;
+var NavItem = ReactBootstrap.NavItem;
+var MenuItem = ReactBootstrap.MenuItem;
+
+var Jumbotron = ReactBootstrap.Jumbotron;
+
+// And the same for ReactWidgets
 var DateTimePicker = ReactWidgets.DateTimePicker;
 
 var TodoItem = React.createClass({
@@ -71,7 +79,7 @@ var TodoItem = React.createClass({
 							checked={checkedString}
 							onClick={this.onCheckboxClicked}/></Col>
 						<Col xs={7}>{this.props.todo.Description}</Col>
-						<Col xs={4}>{this.state.dueDate.toString()}</Col>
+						<Col xs={4}>{niceDateString(this.state.dueDate)}</Col>
 						</Row>
 					</Input>
 				</ListGroupItem>
@@ -119,6 +127,10 @@ var TodoList = React.createClass({
 	getInitialState: function() {
 		return {newTodo: null};
 	},
+	handleMenuSelect: function(selectedKey) {
+		if (selectedKey == 3) //New Todo
+			this.handleNewTodoSubmit();
+	},
 	handleNewTodoSubmit: function() {
 		var newTodo = new Todo();
 		newTodo.Due = new Date();
@@ -147,9 +159,29 @@ var TodoList = React.createClass({
 			));
 		}
 
+		if (todoNodes.length == 0) {
+			todoNodes = (
+				<Jumbotron>
+					<h2>You're done with <i>everything</i>?</h2>
+					<p>Either you're lying or you've applied too many filters.</p>
+				</Jumbotron>
+			);
+		}
+
 		return (
 			<div>
-				<Button bsStyle="primary" onClick={this.handleNewTodoSubmit}>New Todo</Button>
+				<Nav bsStyle="pills" onSelect={this.handleMenuSelect}>
+					<DropdownButton eventKey={1} title="Filter" navItem={true}>
+						<MenuItem eventKey={1.1}>Due Date</MenuItem>
+						<MenuItem eventKey={1.2}>Completed</MenuItem>
+						<MenuItem eventKey={1.3}>Tags</MenuItem>
+					</DropdownButton>
+					<DropdownButton eventKey={2} title="Sort" navItem={true}>
+						<MenuItem eventKey={2.1}>Due Date</MenuItem>
+						<MenuItem eventKey={2.2}>Completed</MenuItem>
+					</DropdownButton>
+					<NavItem eventKey={3}>New Todo</NavItem>
+				</Nav>
 				<ListGroup>
 					{todoNodes}
 				</ListGroup>
