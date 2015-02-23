@@ -1,28 +1,61 @@
+// Import all the objects we want to use from ReactBootstrap
+var Jumbotron = ReactBootstrap.Jumbotron;
+var Panel = ReactBootstrap.Panel;
+
 var NewUserForm = React.createClass({
 	getInitialState: function() {
-		return {error: ""};
+		return {error: "",
+			name: "",
+			username: "",
+			email: "",
+			password: "",
+			confirm_password: "",
+			passwordChanged: false};
+	},
+	passwordValidationState: function() {
+		if (this.state.passwordChanged) {
+			if (this.state.password.length >= 10)
+				return "success";
+			else if (this.state.password.length >= 6)
+				return "warning";
+			else
+				return "error";
+		}
+	},
+	confirmPasswordValidationState: function() {
+		if (this.state.confirm_password.length > 0) {
+			if (this.state.confirm_password == this.state.password)
+				return "success";
+			else
+				return "error";
+		}
+	},
+	handleChange: function() {
+		if (this.refs.password.getValue().length > 0)
+			this.setState({passwordChanged: true});
+		this.setState({
+			name: this.refs.name.getValue(),
+			username: this.refs.username.getValue(),
+			email: this.refs.email.getValue(),
+			password: this.refs.password.getValue(),
+			confirm_password: this.refs.confirm_password.getValue()
+		});
 	},
 	handleSubmit: function(e) {
 		var u = new User();
 		var error = "";
 		e.preventDefault();
 
-		u.Name = this.refs.name.getDOMNode().value;
-		u.Username = this.refs.username.getDOMNode().value;
-		u.Email = this.refs.email.getDOMNode().value;
-		u.Password = this.refs.password.getDOMNode().value;
-		if (u.Password != this.refs.confirm_password.getDOMNode().value) {
+		u.Name = this.state.name;
+		u.Username = this.state.username;
+		u.Email = this.state.email;
+		u.Password = this.state.password;
+		if (u.Password != this.state.confirm_password) {
 			this.setState({error: "Error: password do not match"});
 			return;
 		}
 
 		this.handleCreateNewUser(u);
-
-		this.refs.name.getDOMNode().value = '';
-		this.refs.username.getDOMNode().value = '';
-		this.refs.email.getDOMNode().value = '';
-		this.refs.password.getDOMNode().value = '';
-		this.refs.confirm_password.getDOMNode().value = '';
 	},
 	handleCreateNewUser: function(user) {
 		$.ajax({
@@ -48,18 +81,19 @@ var NewUserForm = React.createClass({
 		});
 	},
 	render: function() {
+		var title = <h3>Create New User</h3>;
 		return (
-			<div>
-				<form onSubmit={this.handleSubmit}>
-					<span color="red">{this.state.error}</span>
-					Name: <input ref="name" /> <br />
-					Username: <input ref="username" /> <br />
-					Email: <input ref="email" /> <br />
-					Password: <input type="password" ref="password" /> <br />
-					Confirm Password: <input type="password" ref="confirm_password" /> <br />
-					<button>Create User</button>
+			<Panel header={title} bsStyle="info">
+				<span color="red">{this.state.error}</span>
+				<form onSubmit={this.handleSubmit} className="form-horizontal">
+					<Input type="text" label="Name" value={this.state.name} onChange={this.handleChange} ref="name" labelClassName="col-xs-2" wrapperClassName="col-xs-10"/>
+					<Input type="text" label="Username" value={this.state.username} onChange={this.handleChange} ref="username" labelClassName="col-xs-2" wrapperClassName="col-xs-10"/>
+					<Input type="email" label="Email" value={this.state.email} onChange={this.handleChange} ref="email" labelClassName="col-xs-2" wrapperClassName="col-xs-10"/>
+					<Input type="password" label="Password" value={this.state.password} onChange={this.handleChange} ref="password" labelClassName="col-xs-2" wrapperClassName="col-xs-10"bsStyle={this.passwordValidationState()} hasFeedback/>
+					<Input type="password" label="Confirm Password" value={this.state.confirm_password} onChange={this.handleChange} ref="confirm_password" labelClassName="col-xs-2" wrapperClassName="col-xs-10" bsStyle={this.confirmPasswordValidationState()} hasFeedback/>
+					<Button type="submit" bsStyle="primary">Create New User</Button>
 				</form>
-			</div>
+			</Panel>
 		);
 	}
 });
@@ -185,6 +219,7 @@ var ToGoDoApp = React.createClass({
 					this.setState({error: e});
 				} else {
 					this.getSession();
+					this.setHash("home");
 				}
 			}.bind(this),
 			error: this.ajaxError
@@ -269,15 +304,22 @@ var ToGoDoApp = React.createClass({
 	},
 	render: function() {
 		var mainContent;
-		if (this.state.hash == "new_user")
+		if (this.state.hash == "new_user") {
 			mainContent = <NewUserForm onNewUser={this.handleNewUser} />
-		else
-			mainContent = <TodoList todos={this.state.todos} onCreateTodo={this.handleCreateTodo} onUpdateTodo={this.handleUpdateTodo} onDeleteTodo={this.handleDeleteTodo} />
+		} else {
+			if (this.state.user.isUser())
+				mainContent = <TodoList todos={this.state.todos} onCreateTodo={this.handleCreateTodo} onUpdateTodo={this.handleUpdateTodo} onDeleteTodo={this.handleDeleteTodo} />
+			else
+			mainContent =
+				<Jumbotron>
+					<h1>To<i>Go</i>Do</h1>
+					<p>Get. Stuff. Done.</p>
+				</Jumbotron>
+		}
 
 		return (
 			<div>
 				<TopBar error={this.state.error} onErrorClear={this.handleErrorClear} onLoginSubmit={this.handleLoginSubmit} onCreateNewUser={this.handleCreateNewUser} user={this.state.user} onLogoutSubmit={this.handleLogoutSubmit} />
-				<h3>ToGoDo</h3>
 				{mainContent}
 			</div>
 		);

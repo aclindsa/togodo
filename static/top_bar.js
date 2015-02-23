@@ -1,3 +1,12 @@
+// Import all the objects we want to use from ReactBootstrap
+var Alert = ReactBootstrap.Alert;
+
+var Input = ReactBootstrap.Input;
+var Button = ReactBootstrap.Button;
+
+var Row = ReactBootstrap.Row;
+var Col = ReactBootstrap.Col;
+
 var LoginBar = React.createClass({
 	getInitialState: function() {
 		return {username: '', password: ''};
@@ -11,11 +20,10 @@ var LoginBar = React.createClass({
 	handleSubmit: function(e) {
 		var user = new User();
 		e.preventDefault();
-		user.Username = this.state.username;
-		user.Password = this.state.password;
+		user.Username = this.refs.username.getValue();
+		user.Password = this.refs.password.getValue();
 		this.props.onLoginSubmit(user);
-		this.refs.username.getDOMNode().value = '';
-		this.refs.password.getDOMNode().value = '';
+		console.log(this.refs.username);
 	},
 	handleNewUserSubmit: function(e) {
 		e.preventDefault();
@@ -23,16 +31,31 @@ var LoginBar = React.createClass({
 	},
 	render: function() {
 		return (
-			<div>
-				<form onSubmit={this.handleSubmit}>
-					User: <input onChange={this.onUsernameChange} ref="username" />
-					Password: <input type="password" onChange={this.onPasswordChange} ref="password" />
-					<button>Login</button>
-				</form>
-				<form onSubmit={this.handleNewUserSubmit}>
-					<button>New User</button>
-				</form>
-			</div>
+			<form onSubmit={this.handleSubmit}>
+			<Input wrapperClassName="wrapper">
+				<Row>
+					<Col xs={4}></Col>
+					<Col xs={2}>
+						<Button bsStyle="link"
+							onClick={this.handleNewUserSubmit}>Create New User</Button>
+					</Col>
+					<Col xs={2}>
+						<Input type="text"
+							placeholder="Username..."
+							ref="username"/>
+					</Col>
+					<Col xs={2}>
+						<Input type="password"
+							placeholder="Password..."
+							ref="password" block/>
+					</Col>
+					<Col xs={2}>
+						<Button type="submit" bsStyle="primary" block>
+							Login</Button>
+					</Col>
+				</Row>
+			</Input>
+			</form>
 		);
 	}
 });
@@ -43,30 +66,21 @@ var LogoutBar = React.createClass({
 		this.props.onLogoutSubmit();
 	},
 	render: function() {
+		var signedInString = "Signed in as "+this.props.user.Name;
 		return (
-			<div>
-				<form onSubmit={this.handleSubmit}>
-					Signed in as {this.props.user.Name}
-					<button>Logout</button>
-				</form>
-			</div>
-		);
-	}
-});
-
-var ErrorBar = React.createClass({
-	handleSubmit: function(e) {
-		e.preventDefault();
-		this.props.onErrorClear();
-	},
-	render: function() {
-		return (
-			<div>
-				<form onSubmit={this.handleSubmit}>
-					Error {this.props.error.ErrorId}: {this.props.error.ErrorString}
-					<button>Clear</button>
-				</form>
-			</div>
+			<Input wrapperClassName="wrapper">
+				<Row>
+					<Col xs={2}><label className="control-label pull-left">To<i>Go</i>Do</label></Col>
+					<Col xs={6}></Col>
+					<Col xs={4}>
+						<div className="pull-right">
+						<DropdownButton title={signedInString} bsStyle="info">
+							<MenuItem onClick={this.handleSubmit}>Logout</MenuItem>
+						</DropdownButton>
+						</div>
+					</Col>
+				</Row>
+			</Input>
 		);
 	}
 });
@@ -74,16 +88,23 @@ var ErrorBar = React.createClass({
 var TopBar = React.createClass({
 	render: function() {
 		var barContents;
-		if (this.props.error.isError())
-			barContents = <ErrorBar error={this.props.error} onErrorClear={this.props.onErrorClear} />;
-		else if (!this.props.user.isUser())
+		var errorAlert;
+		if (!this.props.user.isUser())
 			barContents = <LoginBar onLoginSubmit={this.props.onLoginSubmit} onCreateNewUser={this.props.onCreateNewUser} />;
 		else
 			barContents = <LogoutBar user={this.props.user} onLogoutSubmit={this.props.onLogoutSubmit} />;
+		if (this.props.error.isError())
+			errorAlert =
+					<Alert bsStyle="danger" onDismiss={this.props.onErrorClear}>
+						<h4>Error!</h4>
+						<p>Error {this.props.error.ErrorId}: {this.props.error.ErrorString}</p>
+						<Button onClick={this.props.onErrorClear}>Clear</Button>
+					</Alert>;
 
 		return (
 			<div>
 				{barContents}
+				{errorAlert}
 			</div>
 		);
 	}

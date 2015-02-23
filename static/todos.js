@@ -90,24 +90,26 @@ var TodoItem = React.createClass({
 					<form onSubmit={this.handleSaveSubmit}>
 					<Input wrapperClassName="wrapper">
 						<Row>
-							<Col xs={1}><label class="control-label">Task:</label></Col>
+							<Col xs={1}><label className="control-label">Task:</label></Col>
 							<Col xs={7}><Input type="text"
 								onClick={this.preventOnClick}
 								defaultValue={this.props.todo.Description}
 								ref="description"/></Col>
-							<Col xs={1}><label class="control-label">Due:</label></Col>
+							<Col xs={1}><label className="control-label">Due:</label></Col>
 							<Col xs={3}><DateTimePicker
 								onClick={this.preventOnClick}
 								defaultValue={this.state.dueDate}
 								onChange={this.handleDateChanged}/></Col>
 						</Row>
 						<Row>
-							<Col xs={1}><label class="control-label">Notes:</label></Col>
+							<Col xs={1}><label className="control-label">Notes:</label></Col>
 							<Col xs={7}><Input type="textarea"
 								onClick={this.preventOnClick}
 								defaultValue={this.props.todo.Notes}
 								ref="notes"/></Col>
-							<Col xs={4}><ButtonGroup>
+						</Row>
+						<Row>
+							<Col xs={12}><ButtonGroup className="pull-right">
 								<Button bsStyle="danger"
 									onClick={this.handleDelete}>Delete</Button>
 								<Button bsStyle="warning"
@@ -128,7 +130,7 @@ var TodoList = React.createClass({
 		return {newTodo: null};
 	},
 	handleMenuSelect: function(selectedKey) {
-		if (selectedKey == 3) //New Todo
+		if (selectedKey == 3) //New Task
 			this.handleNewTodoSubmit();
 	},
 	handleNewTodoSubmit: function() {
@@ -180,7 +182,7 @@ var TodoList = React.createClass({
 						<MenuItem eventKey={2.1}>Due Date</MenuItem>
 						<MenuItem eventKey={2.2}>Completed</MenuItem>
 					</DropdownButton>
-					<NavItem eventKey={3}>New Todo</NavItem>
+					<NavItem eventKey={3}>New Task</NavItem>
 				</Nav>
 				<ListGroup>
 					{todoNodes}
