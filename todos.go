@@ -11,7 +11,10 @@ import (
 type Todo struct {
 	TodoId      int64
 	Description string
-	Due         time.Time
+	HasDueDate  bool
+	DueDate     time.Time
+	HasReminder bool
+	Reminder    time.Time
 	Notes       string
 	Completed   bool
 	UserId      int64 `json:"-"`

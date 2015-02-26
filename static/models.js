@@ -79,7 +79,10 @@ Session.prototype.isSession = function() {
 function Todo() {
 	this.TodoId = -1;
 	this.Description = "";
-	this.Due = new Date(0);
+	this.HasDueDate = false;
+	this.DueDate = new Date(0);
+	this.HasReminder = false;
+	this.Reminder = new Date(0);
 	this.Notes = "";
 	this.Completed = false;
 }
@@ -88,7 +91,10 @@ Todo.prototype.toJSON = function() {
 	var json_obj = {};
 	json_obj.TodoId = this.TodoId;
 	json_obj.Description = this.Description;
-	json_obj.Due = this.Due.toJSON();
+	json_obj.HasDueDate = this.HasDueDate;
+	json_obj.DueDate = this.DueDate.toJSON();
+	json_obj.HasReminder = this.HasReminder;
+	json_obj.Reminder = this.Reminder.toJSON();
 	json_obj.Notes = this.Notes;
 	json_obj.Completed = this.Completed;
 	return JSON.stringify(json_obj);
@@ -107,16 +113,31 @@ Todo.prototype.fromJSON = function(json_input) {
 		this.TodoId = json_obj.TodoId
 	if (json_obj.hasOwnProperty("Description"))
 		this.Description = json_obj.Description
-	if (json_obj.hasOwnProperty("Due")) {
-		this.Due = json_obj.Due
-		if (typeof this.Due === 'string') {
-			var t = Date.parse(this.Due);
+	if (json_obj.hasOwnProperty("HasDueDate"))
+		this.HasDueDate = json_obj.HasDueDate
+	if (json_obj.hasOwnProperty("DueDate")) {
+		this.DueDate = json_obj.DueDate
+		if (typeof this.DueDate === 'string') {
+			var t = Date.parse(this.DueDate);
 			if (t)
-				this.Due = new Date(t);
+				this.DueDate = new Date(t);
 			else
-				this.Due = new Date(0);
+				this.DueDate = new Date(0);
 		} else
-			this.Due = new Date(0);
+			this.DueDate = new Date(0);
+	}
+	if (json_obj.hasOwnProperty("HasReminder"))
+		this.HasReminder = json_obj.HasReminder
+	if (json_obj.hasOwnProperty("Reminder")) {
+		this.Reminder = json_obj.Reminder
+		if (typeof this.Reminder === 'string') {
+			var t = Date.parse(this.Reminder);
+			if (t)
+				this.Reminder = new Date(t);
+			else
+				this.Reminder = new Date(0);
+		} else
+			this.Reminder = new Date(0);
 	}
 	if (json_obj.hasOwnProperty("Notes"))
 		this.Notes = json_obj.Notes
@@ -128,7 +149,10 @@ Todo.prototype.copy = function() {
 	var newTodo = new Todo();
 	newTodo.TodoId = this.TodoId;
 	newTodo.Description = this.Description;
-	newTodo.Due = this.Due;
+	newTodo.HasDueDate = this.HasDueDate;
+	newTodo.DueDate = this.DueDate;
+	newTodo.HasReminder = this.HasReminder;
+	newTodo.Reminder = this.Reminder;
 	newTodo.Notes = this.Notes;
 	newTodo.Completed = this.Completed;
 	return newTodo;
