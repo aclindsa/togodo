@@ -85,13 +85,49 @@ var NewUserForm = React.createClass({
 		return (
 			<Panel header={title} bsStyle="info">
 				<span color="red">{this.state.error}</span>
-				<form onSubmit={this.handleSubmit} className="form-horizontal">
-					<Input type="text" label="Name" value={this.state.name} onChange={this.handleChange} ref="name" labelClassName="col-xs-2" wrapperClassName="col-xs-10"/>
-					<Input type="text" label="Username" value={this.state.username} onChange={this.handleChange} ref="username" labelClassName="col-xs-2" wrapperClassName="col-xs-10"/>
-					<Input type="email" label="Email" value={this.state.email} onChange={this.handleChange} ref="email" labelClassName="col-xs-2" wrapperClassName="col-xs-10"/>
-					<Input type="password" label="Password" value={this.state.password} onChange={this.handleChange} ref="password" labelClassName="col-xs-2" wrapperClassName="col-xs-10"bsStyle={this.passwordValidationState()} hasFeedback/>
-					<Input type="password" label="Confirm Password" value={this.state.confirm_password} onChange={this.handleChange} ref="confirm_password" labelClassName="col-xs-2" wrapperClassName="col-xs-10" bsStyle={this.confirmPasswordValidationState()} hasFeedback/>
-					<Button type="submit" bsStyle="primary">Create New User</Button>
+				<form onSubmit={this.handleSubmit}
+						className="form-horizontal">
+					<Input type="text"
+							label="Name"
+							value={this.state.name}
+							onChange={this.handleChange}
+							ref="name"
+							labelClassName="col-xs-2"
+							wrapperClassName="col-xs-10"/>
+					<Input type="text"
+							label="Username"
+							value={this.state.username}
+							onChange={this.handleChange}
+							ref="username"
+							labelClassName="col-xs-2"
+							wrapperClassName="col-xs-10"/>
+					<Input type="email"
+							label="Email"
+							value={this.state.email}
+							onChange={this.handleChange}
+							ref="email"
+							labelClassName="col-xs-2"
+							wrapperClassName="col-xs-10"/>
+					<Input type="password"
+							label="Password"
+							value={this.state.password}
+							onChange={this.handleChange}
+							ref="password"
+							labelClassName="col-xs-2"
+							wrapperClassName="col-xs-10"
+							bsStyle={this.passwordValidationState()}
+							hasFeedback/>
+					<Input type="password"
+							label="Confirm Password"
+							value={this.state.confirm_password}
+							onChange={this.handleChange}
+							ref="confirm_password"
+							labelClassName="col-xs-2"
+							wrapperClassName="col-xs-10"
+							bsStyle={this.confirmPasswordValidationState()}
+							hasFeedback/>
+					<Button type="submit"
+							bsStyle="primary">Create New User</Button>
 				</form>
 			</Panel>
 		);
@@ -105,6 +141,7 @@ var ToGoDoApp = React.createClass({
 			session: new Session(),
 			user: new User(),
 			todos: [],
+			tags: [],
 			error: new Error()
 		};
 	},
@@ -178,7 +215,7 @@ var ToGoDoApp = React.createClass({
 	},
 	getTodos: function() {
 		if (!this.state.session.isSession()) {
-			this.setState({todos: []});
+			this.setState({todos: [], tags: []});
 			return;
 		}
 		$.ajax({
@@ -187,7 +224,8 @@ var ToGoDoApp = React.createClass({
 			url: "todo/",
 			success: function(data, status, jqXHR) {
 				var e = new Error();
-				var ts = [];
+				var todos = [];
+				tags = [];
 				e.fromJSON(data);
 				if (e.isError()) {
 					this.setState({error: e});
@@ -195,10 +233,14 @@ var ToGoDoApp = React.createClass({
 					for (var i = 0; i < data.todos.length; i++) {
 						var t = new Todo();
 						t.fromJSON(data.todos[i]);
-						ts.push(t);
+						for (var j = 0; j < t.Tags.length; j++) {
+							if (tags.indexOf(t.Tags[j]) == -1)
+								tags.push(t.Tags[j]);
+						}
+						todos.push(t);
 					}
 				}
-				this.setState({todos: ts});
+				this.setState({todos: todos, tags: tags});
 			}.bind(this),
 			error: this.ajaxError
 		});
@@ -308,7 +350,12 @@ var ToGoDoApp = React.createClass({
 			mainContent = <NewUserForm onNewUser={this.handleNewUser} />
 		} else {
 			if (this.state.user.isUser())
-				mainContent = <TodoList todos={this.state.todos} onCreateTodo={this.handleCreateTodo} onUpdateTodo={this.handleUpdateTodo} onDeleteTodo={this.handleDeleteTodo} />
+				mainContent = <TodoList
+						todos={this.state.todos}
+						tags={this.state.tags}
+						onCreateTodo={this.handleCreateTodo}
+						onUpdateTodo={this.handleUpdateTodo}
+						onDeleteTodo={this.handleDeleteTodo} />
 			else
 			mainContent =
 				<Jumbotron>
@@ -319,7 +366,13 @@ var ToGoDoApp = React.createClass({
 
 		return (
 			<div>
-				<TopBar error={this.state.error} onErrorClear={this.handleErrorClear} onLoginSubmit={this.handleLoginSubmit} onCreateNewUser={this.handleCreateNewUser} user={this.state.user} onLogoutSubmit={this.handleLogoutSubmit} />
+				<TopBar
+						error={this.state.error}
+						onErrorClear={this.handleErrorClear}
+						onLoginSubmit={this.handleLoginSubmit}
+						onCreateNewUser={this.handleCreateNewUser}
+						user={this.state.user}
+						onLogoutSubmit={this.handleLogoutSubmit} />
 				{mainContent}
 			</div>
 		);

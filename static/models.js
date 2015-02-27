@@ -83,6 +83,7 @@ function Todo() {
 	this.DueDate = new Date(0);
 	this.HasReminder = false;
 	this.Reminder = new Date(0);
+	this.Tags = [];
 	this.Notes = "";
 	this.Completed = false;
 }
@@ -95,6 +96,7 @@ Todo.prototype.toJSON = function() {
 	json_obj.DueDate = this.DueDate.toJSON();
 	json_obj.HasReminder = this.HasReminder;
 	json_obj.Reminder = this.Reminder.toJSON();
+	json_obj.Tags = this.Tags.join('\n');
 	json_obj.Notes = this.Notes;
 	json_obj.Completed = this.Completed;
 	return JSON.stringify(json_obj);
@@ -138,6 +140,10 @@ Todo.prototype.fromJSON = function(json_input) {
 				this.Reminder = new Date(0);
 		} else
 			this.Reminder = new Date(0);
+	}
+	if (json_obj.hasOwnProperty("Tags")) {
+		if (json_obj.Tags.length > 0)
+			this.Tags = json_obj.Tags.split('\n');
 	}
 	if (json_obj.hasOwnProperty("Notes"))
 		this.Notes = json_obj.Notes

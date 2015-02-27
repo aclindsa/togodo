@@ -15,6 +15,7 @@ type Todo struct {
 	DueDate     time.Time
 	HasReminder bool
 	Reminder    time.Time
+	Tags        string //tags are joined together by newlines \n
 	Notes       string
 	Completed   bool
 	UserId      int64 `json:"-"`

@@ -24,6 +24,7 @@ var OverlayMixin = ReactBootstrap.OverlayMixin;
 
 // And the same for ReactWidgets
 var Calendar = ReactWidgets.Calendar;
+var Multiselect = ReactWidgets.Multiselect;
 
 var BetterDateTimePicker = React.createClass({
 	mixins: [OverlayMixin],
@@ -246,6 +247,7 @@ var TodoItem = React.createClass({
 			dueDate: this.props.todo.DueDate,
 			hasReminder: this.props.todo.HasReminder,
 			reminder: this.props.todo.Reminder,
+			tags: this.props.todo.Tags,
 			selected: selected
 		};
 	},
@@ -267,6 +269,16 @@ var TodoItem = React.createClass({
 	handleReminderEnabled: function() {
 		this.setState({hasReminder: true});
 	},
+	handleCreateNewTag: function(tag) {
+		var tags = this.state.tags;
+		if (tags.indexOf(tag) == -1) {
+			tags.push(tag);
+			this.setState({tags: tags});
+		}
+	},
+	handleTagsChanged: function(tags) {
+		this.setState({tags: tags});
+	},
 	handleSaveSubmit: function(e) {
 		e.preventDefault();
 		this.setState({selected: false});
@@ -277,6 +289,7 @@ var TodoItem = React.createClass({
 		todo.DueDate = this.state.dueDate;
 		todo.HasReminder = this.state.hasReminder;
 		todo.Reminder = this.state.reminder;
+		todo.Tags = this.state.tags;
 		this.props.onUpdateTodo(todo);
 	},
 	handleClose: function() {
@@ -285,6 +298,7 @@ var TodoItem = React.createClass({
 			dueDate: this.props.todo.DueDate,
 			hasReminder: this.props.todo.HasReminder,
 			reminder: this.props.todo.Reminder,
+			tags: this.props.todo.Tags,
 			selected: false,
 		});
 		if (this.props.onCloseTodo)
@@ -354,6 +368,18 @@ var TodoItem = React.createClass({
 								onDisable={this.handleReminderDisabled}/></Col>
 						</Row>
 						<Row>
+							<Col xs={2}><label className="control-label pull-right">Tags</label></Col>
+							<Col xs={9}><Multiselect
+									className="form-group"
+									defaultValue={this.props.todo.Tags}
+									data={this.props.tags}
+									messages={{createNew: "(create new tag)",
+										emptyList: "Type to create a new tag",
+										emptyFilter: "No tags matched"}}
+									onCreate={this.handleCreateNewTag}
+									onChange={this.handleTagsChanged} /></Col>
+						</Row>
+						<Row>
 							<Col xs={2}><label className="control-label pull-right">Notes</label></Col>
 							<Col xs={9}><Input type="textarea"
 								defaultValue={this.props.todo.Notes}
@@ -401,7 +427,12 @@ var TodoList = React.createClass({
 		var props = this.props; //'this' gets eaten inside the map
 		var todoNodes = this.props.todos.map(function(todo) {
 			return (
-				<TodoItem key={todo.TodoId} todo={todo} onUpdateTodo={props.onUpdateTodo} onDeleteTodo={props.onDeleteTodo} />
+				<TodoItem
+						key={todo.TodoId}
+						todo={todo}
+						tags={props.tags}
+						onUpdateTodo={props.onUpdateTodo}
+						onDeleteTodo={props.onDeleteTodo} />
 			);
 		});
 
@@ -409,7 +440,14 @@ var TodoList = React.createClass({
 		// select it
 		if (this.state.newTodo != null) {
 			todoNodes.unshift((
-				<TodoItem key={this.state.newTodo.TodoId} todo={this.state.newTodo} onUpdateTodo={this.handleSaveNewTodo} onDeleteTodo={this.handleAbandonNewTodo} onCloseTodo={this.handleAbandonNewTodo} selected />
+				<TodoItem
+						key={this.state.newTodo.TodoId}
+						todo={this.state.newTodo}
+						tags={this.props.tags}
+						onUpdateTodo={this.handleSaveNewTodo}
+						onDeleteTodo={this.handleAbandonNewTodo}
+						onCloseTodo={this.handleAbandonNewTodo}
+						selected />
 			));
 		}
 
@@ -429,6 +467,7 @@ var TodoList = React.createClass({
 						<MenuItem eventKey={1.1}>Due Date</MenuItem>
 						<MenuItem eventKey={1.2}>Completed</MenuItem>
 						<MenuItem eventKey={1.3}>Tags</MenuItem>
+						<MenuItem eventKey={1.4}>Clear Filter</MenuItem>
 					</DropdownButton>
 					<DropdownButton eventKey={2} title="Sort" navItem={true}>
 						<MenuItem eventKey={2.1}>Due Date</MenuItem>
