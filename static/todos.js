@@ -450,6 +450,13 @@ var TodoList = React.createClass({
 	handleAbandonNewTodo: function(todo) {
 		this.setState({newTodo: null});
 	},
+	filterActive: function(filter) {
+		for (var i = 0; i < this.state.filters.length; i++) {
+			if (filter.name() == this.state.filters[i].name())
+				return true;
+		}
+		return false;
+	},
 	handleRemoveFilter: function(filter) {
 		var filters = this.state.filters;
 		filters.splice(filters.indexOf(filter), 1);
@@ -499,14 +506,26 @@ var TodoList = React.createClass({
 			);
 		}
 
-		var tagFilterNodes = this.props.tags.map(function(tag) {
-			return (
-				<MenuItem eventKey={tag}>&nbsp;-&nbsp;&nbsp;{tag}</MenuItem>
-			);
-		});
+		var staticFilterNodes = [];
+		if (!this.filterActive(new CompletedFilter()) &&
+						!this.filterActive(new UncompletedFilter())) {
+			staticFilterNodes = [
+				<MenuItem eventKey={1.1}>Completed</MenuItem>,
+				<MenuItem eventKey={1.2}>Uncompleted</MenuItem>
+			];
+		}
+
+		var tagFilterNodes = [];
+		for (var i = 0; i < this.props.tags.length; i++) {
+			var tag = this.props.tags[i];
+			if (!this.filterActive(new TagFilter(tag))) {
+				tagFilterNodes.push(<MenuItem eventKey={tag}>&nbsp;-&nbsp;&nbsp;{tag}</MenuItem>);
+			}
+		}
 		if (tagFilterNodes.length > 0) {
 			tagFilterNodes.unshift(<MenuItem header >Tags:</MenuItem>);
-			tagFilterNodes.unshift(<MenuItem divider />);
+			if (staticFilterNodes.length > 0)
+				tagFilterNodes.unshift(<MenuItem divider />);
 		}
 
 		var cancelFilterNodes = <span />;
@@ -534,8 +553,7 @@ var TodoList = React.createClass({
 			<div>
 				<Nav bsStyle="pills" onSelect={this.handleMenuSelect}>
 					<DropdownButton eventKey={1} title="Filter" navItem={true}>
-						<MenuItem eventKey={1.1}>Completed</MenuItem>
-						<MenuItem eventKey={1.2}>Uncompleted</MenuItem>
+						{staticFilterNodes}
 						{tagFilterNodes}
 					</DropdownButton>
 					<DropdownButton eventKey={2} title="Sort" navItem={true}>
