@@ -527,6 +527,12 @@ var TodoList = React.createClass({
 			if (staticFilterNodes.length > 0)
 				tagFilterNodes.unshift(<MenuItem divider />);
 		}
+		var noActiveFilterNodes = [];
+		if ((tagFilterNodes.length + staticFilterNodes.length) == 0) {
+			noActiveFilterNodes.push(
+				<MenuItem header>(All filters are in use)</MenuItem>
+			);
+		}
 
 		var cancelFilterNodes = <span />;
 		if (this.state.filters.length > 0) {
@@ -555,6 +561,7 @@ var TodoList = React.createClass({
 					<DropdownButton eventKey={1} title="Filter" navItem={true}>
 						{staticFilterNodes}
 						{tagFilterNodes}
+						{noActiveFilterNodes}
 					</DropdownButton>
 					<DropdownButton eventKey={2} title="Sort" navItem={true}>
 						<MenuItem eventKey={2.1}>Due Date (ascending)</MenuItem>
