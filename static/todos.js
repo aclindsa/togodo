@@ -273,13 +273,17 @@ var TodoItem = React.createClass({
 		var todo = this.props.todo.copy();
 		todo.Description = this.refs.description.getValue();
 		todo.Notes = this.refs.notes.getValue();
+		todo.HasDueDate = this.state.hasDueDate;
 		todo.DueDate = this.state.dueDate;
+		todo.HasReminder = this.state.hasReminder;
 		todo.Reminder = this.state.reminder;
 		this.props.onUpdateTodo(todo);
 	},
 	handleClose: function() {
 		this.setState({
+			hasDueDate: this.props.todo.HasDueDate,
 			dueDate: this.props.todo.DueDate,
+			hasReminder: this.props.todo.HasReminder,
 			reminder: this.props.todo.Reminder,
 			selected: false,
 		});
