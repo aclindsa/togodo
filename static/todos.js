@@ -7,6 +7,7 @@ var Button = ReactBootstrap.Button;
 var DropdownButton = ReactBootstrap.DropdownButton;
 var ButtonGroup = ReactBootstrap.ButtonGroup;
 var ButtonToolbar = ReactBootstrap.ButtonToolbar;
+var Glyphicon = ReactBootstrap.Glyphicon;
 
 var OverlayTrigger = ReactBootstrap.OverlayTrigger;
 var Popover = ReactBootstrap.Popover;
@@ -404,11 +405,37 @@ var TodoItem = React.createClass({
 
 var TodoList = React.createClass({
 	getInitialState: function() {
-		return {newTodo: null};
+		return {
+			newTodo: null,
+			filters: []
+		};
 	},
 	handleMenuSelect: function(selectedKey) {
-		if (selectedKey == 3) //New Task
-			this.handleNewTodoSubmit();
+		switch (selectedKey) {
+			case 1.1: //Filter Completed
+				var filters = this.state.filters;
+				filters.push(new CompletedFilter());
+				this.setState({filters: filters});
+				break;
+			case 1.2: //Filter Uncompleted
+				var filters = this.state.filters;
+				filters.push(new UncompletedFilter());
+				this.setState({filters: filters});
+				break;
+			case 1.3: //Filter by tag
+				break;
+			case 3: //Create New Task
+				this.handleNewTodoSubmit();
+				break;
+			default:
+				if (typeof selectedKey == "string") {
+					var filters = this.state.filters;
+					filters.push(new TagFilter(selectedKey));
+					this.setState({filters: filters});
+				} else {
+					console.log("unhandled menu selection: ", selectedKey);
+				}
+		}
 	},
 	handleNewTodoSubmit: function() {
 		var newTodo = new Todo();
@@ -423,9 +450,21 @@ var TodoList = React.createClass({
 	handleAbandonNewTodo: function(todo) {
 		this.setState({newTodo: null});
 	},
+	handleRemoveFilter: function(filter) {
+		var filters = this.state.filters;
+		filters.splice(filters.indexOf(filter), 1);
+		this.setState({filters: filters});
+	},
+	handleRemoveAllFilters: function() {
+		this.setState({filters: []});
+	},
 	render: function() {
+		var todos = this.props.todos;
+		for (var i = 0; i < this.state.filters.length; i++) {
+			todos = todos.filter(this.state.filters[i].filter, this.state.filters[i]);
+		}
 		var props = this.props; //'this' gets eaten inside the map
-		var todoNodes = this.props.todos.map(function(todo) {
+		var todoNodes = todos.map(function(todo) {
 			return (
 				<TodoItem
 						key={todo.TodoId}
@@ -460,21 +499,54 @@ var TodoList = React.createClass({
 			);
 		}
 
+		var tagFilterNodes = this.props.tags.map(function(tag) {
+			return (
+				<MenuItem eventKey={tag}>&nbsp;-&nbsp;&nbsp;{tag}</MenuItem>
+			);
+		});
+		if (tagFilterNodes.length > 0) {
+			tagFilterNodes.unshift(<MenuItem header >Tags:</MenuItem>);
+			tagFilterNodes.unshift(<MenuItem divider />);
+		}
+
+		var cancelFilterNodes = <span />;
+		if (this.state.filters.length > 0) {
+			var handleRemoveFilter = this.handleRemoveFilter;
+			var handleRemoveAllFilters = this.handleRemoveFilter;
+			var cancelFilterButtonNodes = this.state.filters.map(function(filter) {
+				return (
+					<Button onClick={function(){handleRemoveFilter(filter);}}>
+						{filter.name()} <Glyphicon glyph="remove" />
+					</Button>
+				);
+			});
+			if (this.state.filters.length > 1)
+				cancelFilterButtonNodes.unshift(
+					<Button onClick={this.handleRemoveAllFilters}>
+						Remove All Filters <Glyphicon glyph="trash" />
+					</Button>);
+				cancelFilterButtonNodes.unshift(
+					<span className="active-filters-label">Active Filters:</span>);
+			cancelFilterNodes = <ButtonToolbar className="cancel-filters">{cancelFilterButtonNodes}</ButtonToolbar>
+		}
+
 		return (
 			<div>
 				<Nav bsStyle="pills" onSelect={this.handleMenuSelect}>
 					<DropdownButton eventKey={1} title="Filter" navItem={true}>
-						<MenuItem eventKey={1.1}>Due Date</MenuItem>
-						<MenuItem eventKey={1.2}>Completed</MenuItem>
-						<MenuItem eventKey={1.3}>Tags</MenuItem>
-						<MenuItem eventKey={1.4}>Clear Filter</MenuItem>
+						<MenuItem eventKey={1.1}>Completed</MenuItem>
+						<MenuItem eventKey={1.2}>Uncompleted</MenuItem>
+						{tagFilterNodes}
 					</DropdownButton>
 					<DropdownButton eventKey={2} title="Sort" navItem={true}>
-						<MenuItem eventKey={2.1}>Due Date</MenuItem>
+						<MenuItem eventKey={2.1}>Due Date (ascending)</MenuItem>
+						<MenuItem eventKey={2.1}>Due Date (descending)</MenuItem>
 						<MenuItem eventKey={2.2}>Completed</MenuItem>
+						<MenuItem eventKey={2.2}>Uncompleted</MenuItem>
 					</DropdownButton>
 					<NavItem eventKey={3}>New Task</NavItem>
 				</Nav>
+				{cancelFilterNodes}
 				<ListGroup>
 					{todoNodes}
 				</ListGroup>

@@ -4,6 +4,14 @@ div#content {
 	max-width: 70em;
 }
 
+div.cancel-filters {
+	text-align: left;
+}
+div.cancel-filters span.active-filters-label {
+	margin-left: 5px;
+	padding: 7px 13px 7px 13px;
+}
+
 .hidden {
 	visibility: hidden;
 }
