@@ -159,6 +159,7 @@ Todo.prototype.copy = function() {
 	newTodo.DueDate = this.DueDate;
 	newTodo.HasReminder = this.HasReminder;
 	newTodo.Reminder = this.Reminder;
+	newTodo.Tags = this.Tags;
 	newTodo.Notes = this.Notes;
 	newTodo.Completed = this.Completed;
 	return newTodo;
