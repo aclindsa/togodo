@@ -407,7 +407,8 @@ var TodoList = React.createClass({
 	getInitialState: function() {
 		return {
 			newTodo: null,
-			filters: []
+			filters: [],
+			sort: new DueDateSort()
 		};
 	},
 	handleMenuSelect: function(selectedKey) {
@@ -422,12 +423,23 @@ var TodoList = React.createClass({
 				filters.push(new UncompletedFilter());
 				this.setState({filters: filters});
 				break;
-			case 1.3: //Filter by tag
+			case 2.1: //Sort Due Date (ascending)
+				this.setState({sort: new DueDateSort()});
+				break;
+			case 2.2: //Sort Due Date (descending)
+				this.setState({sort: new DueDateSort(true)});
+				break;
+			case 2.3: //Sort Uncompleted
+				this.setState({sort: new CompletedSort()});
+				break;
+			case 2.4: //Sort Completed
+				this.setState({sort: new CompletedSort(true)});
 				break;
 			case 3: //Create New Task
 				this.handleNewTodoSubmit();
 				break;
 			default:
+				//Filter by tag
 				if (typeof selectedKey == "string") {
 					var filters = this.state.filters;
 					filters.push(new TagFilter(selectedKey));
@@ -470,6 +482,8 @@ var TodoList = React.createClass({
 		for (var i = 0; i < this.state.filters.length; i++) {
 			todos = todos.filter(this.state.filters[i].filter, this.state.filters[i]);
 		}
+		todos = todos.sort(this.state.sort.sort.bind(this.state.sort));
+
 		var props = this.props; //'this' gets eaten inside the map
 		var todoNodes = todos.map(function(todo) {
 			return (
@@ -565,9 +579,9 @@ var TodoList = React.createClass({
 					</DropdownButton>
 					<DropdownButton eventKey={2} title="Sort" navItem={true}>
 						<MenuItem eventKey={2.1}>Due Date (ascending)</MenuItem>
-						<MenuItem eventKey={2.1}>Due Date (descending)</MenuItem>
-						<MenuItem eventKey={2.2}>Completed</MenuItem>
-						<MenuItem eventKey={2.2}>Uncompleted</MenuItem>
+						<MenuItem eventKey={2.2}>Due Date (descending)</MenuItem>
+						<MenuItem eventKey={2.3}>Uncompleted First</MenuItem>
+						<MenuItem eventKey={2.4}>Completed First</MenuItem>
 					</DropdownButton>
 					<NavItem eventKey={3}>New Task</NavItem>
 				</Nav>
