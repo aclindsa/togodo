@@ -252,6 +252,10 @@ var TodoItem = React.createClass({
 			selected: selected
 		};
 	},
+	submitFromTags: true, 	// Whether hitting Enter in the tags input
+							// should submit the form.
+	tagJustSelected: false,	// Controls whether onChange on the tag input sets
+							// submitFromTags to true
 	handleDueDateChanged: function(due) {
 		this.setState({dueDate: due});
 	},
@@ -276,9 +280,25 @@ var TodoItem = React.createClass({
 			tags.push(tag);
 			this.setState({tags: tags});
 		}
+		this.submitFromTags = false;
+	},
+	handleSelectTag: function() {
+		this.submitFromTags = false;
+		this.tagJustSelected = true;
 	},
 	handleTagsChanged: function(tags) {
 		this.setState({tags: tags});
+		if (!this.tagJustSelected)
+			this.submitFromTags = true;
+	},
+	handleTagsKeyDown: function(e) {
+		if (e.keyCode == 13 /* Enter */) {
+			if (!this.submitFromTags)
+				e.preventDefault();
+			this.submitFromTags = true;
+		} else {
+			this.submitFromTags = false;
+		}
 	},
 	handleSaveSubmit: function(e) {
 		e.preventDefault();
@@ -378,7 +398,9 @@ var TodoItem = React.createClass({
 										emptyList: "Type to create a new tag",
 										emptyFilter: "No tags matched"}}
 									onCreate={this.handleCreateNewTag}
-									onChange={this.handleTagsChanged} /></Col>
+									onSelect={this.handleSelectTag}
+									onChange={this.handleTagsChanged}
+									onKeyDown={this.handleTagsKeyDown} /></Col>
 						</Row>
 						<Row>
 							<Col xs={2}><label className="control-label pull-right">Notes</label></Col>
