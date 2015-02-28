@@ -35,6 +35,11 @@ func (t *Todo) Read(json_str string) error {
 	return dec.Decode(t)
 }
 
+func (t *Todo) MarkReminded() error {
+	_, err := DB.Exec("UPDATE todos SET HasReminder=? WHERE UserId=? AND TodoId=? AND Reminder=?;", false, t.UserId, t.TodoId, t.Reminder)
+	return err
+}
+
 func (tl *TodoList) Write(w http.ResponseWriter) error {
 	enc := json.NewEncoder(w)
 	return enc.Encode(tl)

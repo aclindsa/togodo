@@ -23,7 +23,6 @@ var LoginBar = React.createClass({
 		user.Username = this.refs.username.getValue();
 		user.Password = this.refs.password.getValue();
 		this.props.onLoginSubmit(user);
-		console.log(this.refs.username);
 	},
 	handleNewUserSubmit: function(e) {
 		e.preventDefault();

@@ -10,7 +10,7 @@ import (
 var DB *gorp.DbMap = initDB()
 
 func initDB() *gorp.DbMap {
-	db, err := sql.Open("sqlite3", "togodo.sqlite")
+	db, err := sql.Open("sqlite3", "file:togodo.sqlite?cache=shared&mode=rwc")
 	if err != nil {
 		log.Fatal(err)
 	}
