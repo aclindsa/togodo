@@ -54,8 +54,6 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	log.Printf("Serving on port %d out of directory: %s", port, base_dir)
-
 	startReminderRoutine()
 
 	servemux := http.NewServeMux()
@@ -65,6 +63,11 @@ func main() {
 	servemux.HandleFunc("/user/", UserHandler)
 	servemux.HandleFunc("/todo/", TodoHandler)
 
-	listener, _ := net.Listen("tcp", ":"+strconv.Itoa(port))
+	listener, err := net.Listen("tcp", ":"+strconv.Itoa(port))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Serving on port %d out of directory: %s", port, base_dir)
 	http.Serve(listener, context.ClearHandler(servemux))
 }
