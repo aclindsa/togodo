@@ -256,6 +256,8 @@ var TodoItem = React.createClass({
 							// should submit the form.
 	tagJustSelected: false,	// Controls whether onChange on the tag input sets
 							// submitFromTags to true
+	justClicked: false,		// If we should focus the first input field because
+							// the task was newly opened for editing
 	handleDueDateChanged: function(due) {
 		this.setState({dueDate: due});
 	},
@@ -301,6 +303,7 @@ var TodoItem = React.createClass({
 		}
 	},
 	handleSaveSubmit: function(e) {
+		console.log(document.activeElement);
 		e.preventDefault();
 		this.setState({selected: false});
 		var todo = this.props.todo.copy();
@@ -330,6 +333,13 @@ var TodoItem = React.createClass({
 	},
 	onClick: function(e) {
 		this.setState({selected: true});
+		this.justClicked = true;
+	},
+	componentDidUpdate: function() {
+		if (this.justClicked) {
+			this.refs.description.getInputDOMNode().focus();
+		}
+		this.justClicked = false;
 	},
 	onCheckboxClicked: function(e) {
 		e.stopPropagation();
@@ -361,7 +371,7 @@ var TodoItem = React.createClass({
 			);
 		else
 			return (
-				<ListGroupItem>
+				<ListGroupItem onBlur={this.handleSaveSubmit}>
 					<form onSubmit={this.handleSaveSubmit} className="form-horizontal">
 					<Input wrapperClassName="wrapper">
 						<Row>
