@@ -15,3 +15,52 @@ div.cancel-filters span.active-filters-label {
 .hidden {
 	visibility: hidden;
 }
+
+.todo-list-item {
+	padding-bottom: 17px;
+}
+
+.todo-list-item .todo-list-description,
+.todo-list-item .todo-list-duedate {
+	text-align: left;
+}
+
+.todo-list-item .checkbox {
+	margin: 0;
+}
+
+.todo-list-tag {
+	font-size: 70%;
+	padding: .2em .5em .2em .5em;
+	margin-right: .75em;
+	border-radius: .5em;
+}
+
+.todo-list-tag-0 {
+	color: white;
+	background-color: #ff2a17; //red
+}
+.todo-list-tag-1 {
+	color: white;
+	background-color: #ff7e47; //orange
+}
+.todo-list-tag-2 {
+	color: black;
+	background-color: #ffd247; //yellow
+}
+.todo-list-tag-3 {
+	color: black;
+	background-color: #3acf93; //green
+}
+.todo-list-tag-4 {
+	color: white;
+	background-color: #428cca; //blue
+}
+.todo-list-tag-5 {
+	color: white;
+	background-color: #5351d2; //indigo
+}
+.todo-list-tag-6 {
+	color: white;
+	background-color: #9351f2; //violet
+}

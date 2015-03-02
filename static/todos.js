@@ -238,6 +238,23 @@ var BetterDateTimePicker = React.createClass({
 	}
 });
 
+var Tag = React.createClass({
+	getHash: function() {
+		var hash = 0;
+		for (var i = 0; i < this.props.tag.length; i++) {
+			var ch = this.props.tag.charCodeAt(i);
+			hash = hash * 31 + ch * 17;
+		}
+		return hash;
+	},
+	render: function() {
+		var classes="todo-list-tag todo-list-tag-" + (this.getHash() % 7);
+		return (
+			<span className={classes}>{this.props.tag}</span>
+		);
+	}
+});
+
 var TodoItem = React.createClass({
 	getInitialState: function() {
 		var selected = false;
@@ -325,21 +342,31 @@ var TodoItem = React.createClass({
 		if (this.state.hasDueDate)
 			dateString = niceDateString(this.state.dueDate);
 
-		if (!this.state.selected)
+		if (!this.state.selected) {
+			var tagNodes = this.props.todo.Tags.map(function(tag) {
+				return (
+					<Tag tag={tag} />
+				);
+			});
 			return (
-				<ListGroupItem onClick={this.onClick} >
-					<Input wrapperClassName="wrapper">
-						<Row>
-						<Col xs={1}><Input type="checkbox"
+				<ListGroupItem onClick={this.onClick} className="todo-list-item">
+					<form>
+					<span className="col-xs-1">
+					<Input type="checkbox"
 							checked={checkedString}
-							onClick={this.onCheckboxClicked}/></Col>
-						<Col xs={7}>{this.props.todo.Description}</Col>
-						<Col xs={4}>{dateString}</Col>
-						</Row>
-					</Input>
+							onClick={this.onCheckboxClicked} />
+					</span>
+					<span className="col-xs-7 todo-list-description">
+						{tagNodes}
+						{this.props.todo.Description}
+					</span>
+					<span className="col-xs-4 todo-list-duedate">
+						{dateString}
+					</span>
+					</form>
 				</ListGroupItem>
 			);
-		else
+		} else {
 			return (
 				<ListGroupItem>
 					<form onSubmit={this.handleSaveSubmit} className="form-horizontal">
@@ -400,6 +427,7 @@ var TodoItem = React.createClass({
 					</form>
 				</ListGroupItem>
 			);
+		}
 	}
 });
 
