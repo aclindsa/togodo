@@ -34,15 +34,19 @@ func sendReminderEmail(t Todo) error {
 	if t.HasDueDate {
 		body += fmt.Sprintf("Due: %s\n", t.DueDate)
 	}
-	body += fmt.Sprintf("Tags: %s\n", strings.Join(strings.Split(t.Tags, "\n"), ", "))
-	body += fmt.Sprintf("Notes: %s", t.Notes)
+	if len(t.Tags) > 0 {
+		body += fmt.Sprintf("Tags: %s\n", strings.Join(strings.Split(t.Tags, "\n"), ", "))
+	}
+	if len(t.Notes) > 0 {
+		body += fmt.Sprintf("Notes: %s", t.Notes)
+	}
 
 	return sendEmail([]string{user.Email}, subject, headers, body)
 }
 
 func sendReminders(t time.Time) {
 	var todos []Todo
-	_, err := DB.Select(&todos, "SELECT * FROM todos WHERE HasReminder=? AND Reminder<?", true, t)
+	_, err := DB.Select(&todos, "SELECT * FROM todos WHERE HasReminder=? AND Completed=? AND Reminder<?", true, false, t)
 	if err != nil {
 		log.Print(err)
 		return
