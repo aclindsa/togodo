@@ -331,7 +331,6 @@ var ToGoDoApp = React.createClass({
 			type: "DELETE",
 			dataType: "json",
 			url: "todo/"+todo.TodoId+"/",
-			data: {todo: todo.toJSON()},
 			success: function(data, status, jqXHR) {
 				var e = new Error();
 				e.fromJSON(data);
