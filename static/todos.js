@@ -435,7 +435,7 @@ var TodoList = React.createClass({
 	getInitialState: function() {
 		return {
 			newTodo: null,
-			filters: [],
+			filters: [new UncompletedFilter()],
 			sort: new DueDateSort()
 		};
 	},
