@@ -25,6 +25,10 @@ div.cancel-filters span.active-filters-label {
 	text-align: left;
 }
 
+.todo-list-item .glyphicon-bell {
+	padding-left: .5em;
+}
+
 .todo-list-item .checkbox {
 	margin: 0;
 }

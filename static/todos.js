@@ -340,7 +340,7 @@ var TodoItem = React.createClass({
 			checkedString = "checked";
 		var dateString = "";
 		if (this.state.hasDueDate)
-			dateString = niceDateString(this.state.dueDate);
+			dateString = "Due: " + niceDateString(this.state.dueDate);
 
 		if (!this.state.selected) {
 			var tagNodes = this.props.todo.Tags.map(function(tag) {
@@ -348,6 +348,7 @@ var TodoItem = React.createClass({
 					<Tag tag={tag} />
 				);
 			});
+			var reminderNodes = this.props.todo.HasReminder ? <Glyphicon glyph="bell" /> : [];
 			return (
 				<ListGroupItem onClick={this.onClick} className="todo-list-item">
 					<form>
@@ -359,6 +360,7 @@ var TodoItem = React.createClass({
 					<span className="col-xs-7 todo-list-description">
 						{tagNodes}
 						{this.props.todo.Description}
+						{reminderNodes}
 					</span>
 					<span className="col-xs-4 todo-list-duedate">
 						{dateString}
