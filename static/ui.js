@@ -30,6 +30,10 @@ var NewUserForm = React.createClass({
 				return "error";
 		}
 	},
+	handleCancel: function() {
+		if (this.props.onCancel != null)
+			this.props.onCancel();
+	},
 	handleChange: function() {
 		if (this.refs.password.getValue().length > 0)
 			this.setState({passwordChanged: true});
@@ -126,8 +130,12 @@ var NewUserForm = React.createClass({
 							wrapperClassName="col-xs-10"
 							bsStyle={this.confirmPasswordValidationState()}
 							hasFeedback/>
-					<Button type="submit"
-							bsStyle="primary">Create New User</Button>
+					<ButtonGroup className="pull-right">
+						<Button onClick={this.handleCancel}
+								bsStyle="warning">Cancel</Button>
+						<Button type="submit"
+								bsStyle="success">Create New User</Button>
+					</ButtonGroup>
 				</form>
 			</Panel>
 		);
@@ -346,7 +354,7 @@ var ToGoDoApp = React.createClass({
 	render: function() {
 		var mainContent;
 		if (this.state.hash == "new_user") {
-			mainContent = <NewUserForm onNewUser={this.handleNewUser} />
+			mainContent = <NewUserForm onNewUser={this.handleNewUser} onCancel={this.handleNewUser}/>
 		} else {
 			if (this.state.user.isUser())
 				mainContent = <TodoList
