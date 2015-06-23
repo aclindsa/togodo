@@ -6,6 +6,8 @@ function User() {
 	this.Email = "";
 }
 
+var BogusPassword = "password";
+
 User.prototype.toJSON = function() {
 	var json_obj = {};
 	json_obj.UserId = this.UserId;

@@ -18,6 +18,7 @@ type User struct {
 	PasswordHash string `json:"-"`
 	Email        string
 }
+const BogusPassword = "password"
 
 type UserExistsError struct{}
 
@@ -162,13 +163,24 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			// Save old PWHash in case the new password is bogus
+			old_pwhash := user.PasswordHash
+
 			err = user.Read(user_json)
 			if err != nil || user.UserId != userid {
 				WriteError(w, 3 /*Invalid Request*/)
 				return
 			}
 
-			count, err := DB.Update(&user)
+			// If the user didn't create a new password, keep their old one
+			if user.Password != BogusPassword {
+				user.HashPassword()
+			} else {
+				user.Password = ""
+				user.PasswordHash = old_pwhash
+			}
+
+			count, err := DB.Update(user)
 			if count != 1 || err != nil {
 				WriteError(w, 999 /*Internal Error*/)
 				log.Print(err)

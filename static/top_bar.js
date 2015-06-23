@@ -60,9 +60,13 @@ var LoginBar = React.createClass({
 });
 
 var LogoutBar = React.createClass({
-	handleSubmit: function(e) {
-		e.preventDefault();
-		this.props.onLogoutSubmit();
+	handleOnSelect: function(key) {
+		if (key == 1) {
+			if (this.props.onAccountSettings != null)
+				this.props.onAccountSettings();
+		} else if (key == 2) {
+			this.props.onLogoutSubmit();
+		}
 	},
 	render: function() {
 		var signedInString = "Signed in as "+this.props.user.Name;
@@ -73,8 +77,9 @@ var LogoutBar = React.createClass({
 					<Col xs={6}></Col>
 					<Col xs={4}>
 						<div className="pull-right">
-						<DropdownButton title={signedInString} bsStyle="info">
-							<MenuItem onClick={this.handleSubmit}>Logout</MenuItem>
+						<DropdownButton title={signedInString} onSelect={this.handleOnSelect} bsStyle="info">
+							<MenuItem eventKey="1">Account Settings</MenuItem>
+							<MenuItem eventKey="2">Logout</MenuItem>
 						</DropdownButton>
 						</div>
 					</Col>
@@ -91,7 +96,7 @@ var TopBar = React.createClass({
 		if (!this.props.user.isUser())
 			barContents = <LoginBar onLoginSubmit={this.props.onLoginSubmit} onCreateNewUser={this.props.onCreateNewUser} />;
 		else
-			barContents = <LogoutBar user={this.props.user} onLogoutSubmit={this.props.onLogoutSubmit} />;
+			barContents = <LogoutBar user={this.props.user} onLogoutSubmit={this.props.onLogoutSubmit} onAccountSettings={this.props.onAccountSettings}/>;
 		if (this.props.error.isError())
 			errorAlert =
 					<Alert bsStyle="danger" onDismiss={this.props.onErrorClear}>
