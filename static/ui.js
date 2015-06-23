@@ -510,7 +510,7 @@ var ToGoDoApp = React.createClass({
 		var mainContent;
 		if (this.state.hash == "new_user") {
 			mainContent = <NewUserForm onNewUser={this.handleGoHome} onCancel={this.handleGoHome}/>
-		} else if (this.state.hash == "account") {
+		} else if (this.state.hash == "account" && this.state.user.isUser()) {
 			mainContent = <AccountSettings user={this.state.user} onSettingsSubmitted={this.handleSettingsSubmitted} onCancel={this.handleGoHome}/>
 		} else {
 			if (this.state.user.isUser())
