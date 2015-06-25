@@ -28,7 +28,7 @@ func init() {
 	flag.IntVar(&smtpPort, "smtp.port", 587, "SMTP server port to connect to")
 	flag.StringVar(&smtpUsername, "smtp.username", "togodo", "SMTP username")
 	flag.StringVar(&smtpPassword, "smtp.password", "password", "SMTP password")
-	flag.StringVar(&reminderEmail, "email", "tododo@example.com", "Email address to send reminder emails as.")
+	flag.StringVar(&reminderEmail, "email", "togodo@example.com", "Email address to send reminder emails as.")
 	flag.BoolVar(&serveFcgi, "fcgi", false, "Serve via fcgi rather than http.")
 	flag.Parse()
 
