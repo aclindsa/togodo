@@ -55,6 +55,20 @@ func GetTodo(todoid int64, userid int64) (*Todo, error) {
 	return &t, nil
 }
 
+/*
+ * Use sparingly, and only when you're sure you're checking if the user has the
+ * authentication necessary to access this todo.
+ */
+func GetTodoNoUserId(todoid int64) (*Todo, error) {
+	var t Todo
+
+	err := DB.SelectOne(&t, "SELECT * from todos where TodoId=?", todoid)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
 func GetTodos(userid int64) (*[]Todo, error) {
 	var todos []Todo
 

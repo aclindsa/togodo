@@ -20,6 +20,7 @@ var smtpPort int
 var smtpUsername string
 var smtpPassword string
 var reminderEmail string
+var httpAddress string
 
 func init() {
 	flag.StringVar(&baseDir, "base", "./", "Base directory for server")
@@ -30,6 +31,7 @@ func init() {
 	flag.StringVar(&smtpPassword, "smtp.password", "password", "SMTP password")
 	flag.StringVar(&reminderEmail, "email", "togodo@example.com", "Email address to send reminder emails as.")
 	flag.BoolVar(&serveFcgi, "fcgi", false, "Serve via fcgi rather than http.")
+	flag.StringVar(&httpAddress, "address", "https://example.com", "Protocol and domain this app is made available as.")
 	flag.Parse()
 
 	static_path := path.Join(baseDir, "static")
@@ -65,6 +67,7 @@ func main() {
 	servemux.HandleFunc("/session/", SessionHandler)
 	servemux.HandleFunc("/user/", UserHandler)
 	servemux.HandleFunc("/todo/", TodoHandler)
+	servemux.HandleFunc("/postpone/", PostponeHandler)
 
 	listener, err := net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {

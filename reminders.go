@@ -38,8 +38,15 @@ func sendReminderEmail(t Todo) error {
 		body += fmt.Sprintf("Tags: %s\n", strings.Join(strings.Split(t.Tags, "\n"), ", "))
 	}
 	if len(t.Notes) > 0 {
-		body += fmt.Sprintf("Notes: %s", t.Notes)
+		body += fmt.Sprintf("Notes: %s\n", t.Notes)
 	}
+
+	hash := GetPostponeHash(&t, user)
+	body += fmt.Sprintf("\nPostpone by...\n")
+	body += fmt.Sprintf("An hour: %s/postpone/%d/?hash=%s&seconds=%d\n", httpAddress, t.TodoId, hash, 60*60)
+	body += fmt.Sprintf("A day: %s/postpone/%d/?hash=%s&seconds=%d\n", httpAddress, t.TodoId, hash, 60*60*24)
+	body += fmt.Sprintf("A week: %s/postpone/%d/?hash=%s&seconds=%d\n", httpAddress, t.TodoId, hash, 60*60*24*7)
+	body += fmt.Sprintf("A month: %s/postpone/%d/?hash=%s&seconds=%d", httpAddress, t.TodoId, hash, 60*60*24*7*30)
 
 	return sendEmail([]string{user.Email}, subject, headers, body)
 }

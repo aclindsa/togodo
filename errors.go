@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -33,4 +34,14 @@ func WriteError(w http.ResponseWriter, error_code int) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func WriteErrorPlain(w http.ResponseWriter, error_code int) {
+	msg, ok := error_codes[error_code]
+	if !ok {
+		log.Printf("Error: WriteError received error code of %d", error_code)
+		msg = error_codes[999]
+	}
+
+	fmt.Fprintf(w, "Error %d: %s\n", error_code, msg)
 }
